@@ -1,0 +1,11 @@
+Message[302] D:\MICROCHIP\UART_HARDWARE.ASM 52 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] D:\MICROCHIP\UART_HARDWARE.ASM 53 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] D:\MICROCHIP\UART_HARDWARE.ASM 57 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] D:\MICROCHIP\UART_HARDWARE.ASM 60 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] D:\MICROCHIP\UART_HARDWARE.ASM 63 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] D:\MICROCHIP\UART_HARDWARE.ASM 64 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] D:\MICROCHIP\UART_HARDWARE.ASM 71 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[305] D:\MICROCHIP\UART_HARDWARE.ASM 127 : Using default destination of 1 (file).
+Message[305] D:\MICROCHIP\UART_HARDWARE.ASM 135 : Using default destination of 1 (file).
+Message[305] D:\MICROCHIP\UART_HARDWARE.ASM 136 : Using default destination of 1 (file).
+Message[305] D:\MICROCHIP\UART_HARDWARE.ASM 141 : Using default destination of 1 (file).
