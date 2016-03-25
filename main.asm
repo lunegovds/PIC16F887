@@ -97,19 +97,9 @@ ISR
 	retfie		    ; возврат из прерывани€ GIE = 1
 	
 ;*******************************************************************************
-;* ‘”Ќ ÷»» MAIN	    : описание
-;* UartReturnData   : прием и возврат данных по UART
-;* ¬’ќƒ		    : uart_data_in из функции UartGetChar
-;* ¬џ’ќƒ	    : uart_data_out в функцию UartPutChar	
+;* ‘”Ќ ÷»» MAIN     :
 ;*******************************************************************************	
-UartReturnData
-	banksel	uart_data_in
-	movf	uart_data_in, w
-	banksel	uart_data_out
-	movwf	uart_data_out
-	lcall	UartPutChar
-	pagesel	$
-	return
+
 ;*******************************************************************************
 ; »Ќ»÷»јЋ»«ј÷»я
 ;*******************************************************************************	
@@ -129,10 +119,11 @@ EERead
 	pagesel	$
 
 	banksel	ee_data
-	bcf	STATUS, Z	    ; очистка признака нул€
+	bcf	STATUS, Z           ; очистка признака нул€
 	movf	ee_data, f	    ; проверка данных на ноль
+    pagesel EEWrite
 	btfsc	STATUS, Z	    
-	goto	$		    ; если флаг, то EOF
+	goto	EEWrite		    ; если флаг, то EOF
 	
 	movf	ee_data, w
 	banksel	uart_data_out
@@ -142,15 +133,32 @@ EERead
 	
 	incf	ee_addr_data
 	lgoto	EERead		    ; иначе читай дальше
+    
+EEWrite
+    banksel ee_addr_data
+    movlw   0x20
+    movwf   ee_addr_data
+    
+    banksel ee_data
+    movlw   'Z'
+    movwf   ee_data
+    
+    lcall   EEWriteData
+    pagesel $
+    
+    banksel	ee_addr_data
+    movlw	0x20		    ; передача начального адреса еепром
+	movwf	ee_addr_data
+	lcall	EEReadData
+	pagesel	$
+    
+	banksel	uart_data_out	    ; передача символа
+    movf    ee_data, w
+    movwf   uart_data_out
+	lcall	UartPutChar
+	pagesel	$
 	
-	
-;	banksel	uart_data_out	    ; передача символа
-;	movlw	'M'
-;	movwf	uart_data_out
-;	lcall	UartPutChar
-;	pagesel	$
-	
-;	goto Repeat
+    goto    $
 	
 	end
 	

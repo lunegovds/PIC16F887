@@ -10,7 +10,7 @@
 ;-------------------------------------------------------------------------------
 ; ‘”Õ ÷»»
 ;-------------------------------------------------------------------------------
-    extern  UartInit, UartPutChar, UartGetChar			
+    extern  UartInit, UartPutChar, UartGetChar, UartReturnData			
 
     #endif
 

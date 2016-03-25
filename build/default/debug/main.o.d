@@ -1,4 +1,4 @@
-build/default/production/main.o:  \
+build/default/debug/main.o:  \
 	D:/PIC16F887/main.asm  \
 	D:/PIC16F887/hardware_profile.inc  \
 	D:/PIC16F887/p16f887.inc  \

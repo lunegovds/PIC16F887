@@ -1,4 +1,4 @@
-MPASM 5.66                 UART_HARDWARE.ASM   3-23-2016  23:29:46         PAGE  1
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:07:09         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -30,7 +30,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00013 ;-------------------------------------------------------------------------------
                       00014 ; ГЛОБАЛЬНЫЕ ФУНКЦИИ
                       00015 ;-------------------------------------------------------------------------------
-  0000                00016     global  UartInit, UartPutChar, UartGetChar
+  0000                00016     global  UartInit, UartPutChar, UartGetChar, UartReturnData
                       00017 ;-------------------------------------------------------------------------------
                       00018 ; ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
                       00019 ;-------------------------------------------------------------------------------
@@ -57,7 +57,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00040 ; НАЧАЛО КОДА
                       00041 ;-------------------------------------------------------------------------------
                       00042    
-MPASM 5.66                 UART_HARDWARE.ASM   3-23-2016  23:29:46         PAGE  2
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:07:09         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -116,7 +116,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 001B                  00085 UartPutChar
 001B   1283 1303      00086         banksel PIR1
 001D   ???? ????      00087         pagesel UartPutChar
-MPASM 5.66                 UART_HARDWARE.ASM   3-23-2016  23:29:46         PAGE  3
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:07:09         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -137,7 +137,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00100 ;* ВХОД     : Нет
                       00101 ;* ВЫХОД    : Принятый байт - uart_data_in
                       00102 ;* ВЫХОД    : Байт-ошибка uart_error:
-                      00103 ;                                   00 - ошибок нет
+                      00103 ;                                   .00 - ошибок нет
                       00104 ;                                   .-4 - ошибка прерывания
                       00105 ;                                   .-1 - ошибка кадрирования
                       00106 ;                                   .-2 - ошибка переполнения
@@ -175,7 +175,7 @@ Message[305]: Using default destination of 1 (file).
 Message[305]: Using default destination of 1 (file).
 004A   03??           00136         decf    uart_error
                       00137         
-MPASM 5.66                 UART_HARDWARE.ASM   3-23-2016  23:29:46         PAGE  4
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:07:09         PAGE  4
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -201,9 +201,23 @@ Message[305]: Using default destination of 1 (file).
                       00154         
 005E                  00155 UartExit
 005E   0008           00156         return
-                      00157         
-                      00158         end
-MPASM 5.66                 UART_HARDWARE.ASM   3-23-2016  23:29:46         PAGE  5
+                      00157     
+                      00158 ;*******************************************************************************
+                      00159 ;* ФУНКЦИИ  : прием и возврат данных по UART
+                      00160 ;* ВХОД     : uart_data_in из функции UartGetChar
+                      00161 ;* ВЫХОД    : uart_data_out в функцию UartPutChar       
+                      00162 ;*******************************************************************************        
+005F                  00163 UartReturnData
+005F   ???? ????      00164         banksel uart_data_in
+0061   08??           00165         movf    uart_data_in, w
+0062   ???? ????      00166         banksel uart_data_out
+0064   00??           00167         movwf   uart_data_out
+0065   ???? ???? 2??? 00168         lcall   UartPutChar
+0068   ???? ????      00169         pagesel $
+006A   0008           00170         return
+                      00171         
+                      00172         end
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:07:09         PAGE  5
 
 
 SYMBOL TABLE
@@ -262,7 +276,7 @@ BRG5                              00000005
 BRG6                              00000006
 BRG7                              00000007
 BRG8                              00000000
-MPASM 5.66                 UART_HARDWARE.ASM   3-23-2016  23:29:46         PAGE  6
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:07:09         PAGE  6
 
 
 SYMBOL TABLE
@@ -321,7 +335,7 @@ CCPR2L                            0000001B
 CHS0                              00000002
 CHS1                              00000003
 CHS2                              00000004
-MPASM 5.66                 UART_HARDWARE.ASM   3-23-2016  23:29:46         PAGE  7
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:07:09         PAGE  7
 
 
 SYMBOL TABLE
@@ -380,7 +394,7 @@ INTEDG                            00000006
 INTF                              00000001
 IOCB                              00000096
 IOCB0                             00000000
-MPASM 5.66                 UART_HARDWARE.ASM   3-23-2016  23:29:46         PAGE  8
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:07:09         PAGE  8
 
 
 SYMBOL TABLE
@@ -439,7 +453,7 @@ PCON                              0000008E
 PDC0                              00000000
 PDC1                              00000001
 PDC2                              00000002
-MPASM 5.66                 UART_HARDWARE.ASM   3-23-2016  23:29:46         PAGE  9
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:07:09         PAGE  9
 
 
 SYMBOL TABLE
@@ -498,7 +512,7 @@ RC1                               00000001
 RC2                               00000002
 RC3                               00000003
 RC4                               00000004
-MPASM 5.66                 UART_HARDWARE.ASM   3-23-2016  23:29:46         PAGE 10
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:07:09         PAGE 10
 
 
 SYMBOL TABLE
@@ -557,7 +571,7 @@ SSPCON                            00000014
 SSPCON2                           00000091
 SSPEN                             00000005
 SSPIE                             00000003
-MPASM 5.66                 UART_HARDWARE.ASM   3-23-2016  23:29:46         PAGE 11
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:07:09         PAGE 11
 
 
 SYMBOL TABLE
@@ -616,7 +630,7 @@ TOUTPS2                           00000005
 TOUTPS3                           00000006
 TRISA                             00000085
 TRISA0                            00000000
-MPASM 5.66                 UART_HARDWARE.ASM   3-23-2016  23:29:46         PAGE 12
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:07:09         PAGE 12
 
 
 SYMBOL TABLE
@@ -675,7 +689,7 @@ TXEN                              00000005
 TXIE                              00000004
 TXIF                              00000004
 TXREG                             00000019
-MPASM 5.66                 UART_HARDWARE.ASM   3-23-2016  23:29:46         PAGE 13
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:07:09         PAGE 13
 
 
 SYMBOL TABLE
@@ -696,6 +710,7 @@ UartGetChar                       00000028
 UartInit                          00000000
 UartPutChar                       0000001B
 UartReadByte                      0000005A
+UartReturnData                    0000005F
 VCFG0                             00000004
 VCFG1                             00000005
 VR0                               00000000
@@ -733,13 +748,13 @@ Z                                 00000002
 _BOR21V                           00003EFF
 _BOR40V                           00003FFF
 _BOR4V_BOR21V                     00003EFF
-_BOR4V_BOR40V                     00003FFF
-MPASM 5.66                 UART_HARDWARE.ASM   3-23-2016  23:29:46         PAGE 14
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:07:09         PAGE 14
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_BOR4V_BOR40V                     00003FFF
 _BOREN_NSLEEP                     00003EFF
 _BOREN_OFF                        00003CFF
 _BOREN_ON                         00003FFF
@@ -790,15 +805,16 @@ _MCLRE_OFF                        00003FDF
 _MCLRE_ON                         00003FFF
 _PWRTE_OFF                        00003FFF
 _PWRTE_ON                         00003FEF
+_STARTUP_0068                     00000068
 _WDTE_OFF                         00003FF7
-_WDTE_ON                          00003FFF
-_WDT_OFF                          00003FF7
-MPASM 5.66                 UART_HARDWARE.ASM   3-23-2016  23:29:46         PAGE 15
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:07:09         PAGE 15
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_WDTE_ON                          00003FFF
+_WDT_OFF                          00003FF7
 _WDT_ON                           00003FFF
 _WRT_1FOURTH                      00003BFF
 _WRT_256                          00003DFF

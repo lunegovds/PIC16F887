@@ -1,17 +1,17 @@
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE  1
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:08:16         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
                       00001 ;*******************************************************************************
-                      00002 ; ledarray8.asm
-                      00003 ;
-                      00004 ;
+                      00002 ; uart_hardware.asm
+                      00003 ; Функции модуля UART
+                      00004 ; - DEBUG RC6(TX), RC7(RX)
                       00005 ;
                       00006 ; Автор: Д. Лунегов, dlunegov@gmail.com
                       00007 ;
-                      00008 ; История: 06.03.2016 - Файл создан
+                      00008 ; История: 07.03.2016 - Файл создан
                       00009 ;
                       00010 ;*******************************************************************************
                       00011     #include "hardware_profile.inc"
@@ -27,57 +27,197 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00009 
                       00810         LIST
                       00012     radix dec
-  0000                00013     global led_temp                     ; глобальная переменная
-  0000                00014     global LedTurnOn                    ; глобальная функция 
-                      00015 
-                      00016 ;-------------------------------------------------------------------------------
-                      00017 ; РЕГИСТРЫ (ПОЛЗОВАТЕЛЬСКИЕ)
-                      00018 ;-------------------------------------------------------------------------------
-                      00019     
-  00000008            00020 PORT_LED8   equ PORTD   ; назначение порта на массив светодиодов
-  00000088            00021 TRIS_LED8   equ TRISD   ; назначение конфигурационного регистра
-                      00022         
+                      00013 ;-------------------------------------------------------------------------------
+                      00014 ; ГЛОБАЛЬНЫЕ ФУНКЦИИ
+                      00015 ;-------------------------------------------------------------------------------
+  0000                00016     global  UartInit, UartPutChar, UartGetChar, UartReturnData
+                      00017 ;-------------------------------------------------------------------------------
+                      00018 ; ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
+                      00019 ;-------------------------------------------------------------------------------
+  0000                00020     global  uart_data_out, uart_data_in, uart_error 
+                      00021 ;-------------------------------------------------------------------------------
+                      00022 ; ДАННЫЕ    (ПОЛЗОВАТЕЛЬСКИЕ, НАСТРАИВАЕМЫЕ) 
                       00023 ;-------------------------------------------------------------------------------
-                      00024 ; ДАННЫЕ
-                      00025 ;-------------------------------------------------------------------------------
-                      00026         
-                      00027     udata
-0000                  00028 led_temp    res     1   ;зарезервирован байт под временный регистр
-                      00029 
-                      00030 ;-------------------------------------------------------------------------------
-                      00031 ; НАЧАЛО КОДА
+                      00024     #define     BAUD    9600                    ; скорость обмена
+                      00025     #define     XTAL    4000000                 ; частота резонатора
+                      00026     #define     X       (XTAL / BAUD / 16) - 1  ; число для регистра SPBRG (.25)
+                      00027 ;-------------------------------------------------------------------------------
+                      00028 ; РЕГИСТРЫ  (ПОЛЗОВАТЕЛЬСКИЕ, НАСТРАИВАЕМЫЕ)
+                      00029 ;-------------------------------------------------------------------------------
+                      00030     #define    UART_RX  TRISC, RC7      ; нога на прием
+                      00031     #define    UART_TX  TRISC, RC6      ; нога на передачу
                       00032 ;-------------------------------------------------------------------------------
-                      00033    
-                      00034 STARTUP code
-                      00035 
-                      00036 ;-------------------------------------------------------------------------------
-                      00037 ; Функция настройки и включения массива 8 светодиодов
-                      00038 ;-------------------------------------------------------------------------------        
-0000                  00039 LedTurnOn
-0000   1283 1303      00040         banksel PORT_LED8
-0002   0188           00041         clrf    PORT_LED8       ; конфиг. порта
-0003   ???? ????      00042         banksel led_temp
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE  2
+                      00033 ; РЕГИСТРЫ  ФУНКЦИЙ
+                      00034 ;-------------------------------------------------------------------------------
+                      00035     udata
+0000                  00036 uart_data_out   res 1   ; байт на передачу
+0001                  00037 uart_data_in    res 1   ; принятый байт 
+0002                  00038 uart_error      res 1   ; регистр - ошибка приема 
+                      00039 ;-------------------------------------------------------------------------------
+                      00040 ; НАЧАЛО КОДА
+                      00041 ;-------------------------------------------------------------------------------
+                      00042    
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:08:16         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-0005   00??           00043         movwf   led_temp        
-0006   09??           00044         comf    led_temp, w
-0007   1683 1303      00045         banksel TRIS_LED8
+                      00043 STARTUP code
+                      00044 
+                      00045 ;*******************************************************************************
+                      00046 ;* ФУНКЦИЯ  : Инициализация UART
+                      00047 ;* РЕСУРСЫ  : EUSART    
+                      00048 ;* ОПИСАНИЕ : Асинхронный, Speed 9600, 8 bit, NO PARITY, 1STOP
+                      00049 ;*******************************************************************************
+0000                  00050 UartInit
+0000   1683 1303      00051         banksel TRISC           ; устрановка RX & TX на вход
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0009   0088           00046         movwf   TRIS_LED8
-                      00047         
-000A   ???? ????      00048         banksel led_temp
-000C   08??           00049         movf    led_temp, w     ; вкл светодиодов
-000D   1283 1303      00050         banksel PORT_LED8
-000F   0088           00051         movwf   PORT_LED8
-                      00052         
-0010   0008           00053         return
+0002   1787           00052         bsf     UART_RX
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0003   1707           00053         bsf     UART_TX
                       00054         
-                      00055         end
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE  3
+0004   1683 1303      00055         banksel SPBRG           ;установка baud rate
+0006   3019           00056         movlw   X
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0007   0099           00057         movwf   SPBRG
+                      00058         
+0008   1683 1703      00059         banksel BAUDCTL
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000A   1187           00060         bcf     BAUDCTL, BRG16
+                      00061         
+000B   1683 1303      00062         banksel TXSTA
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000D   1518           00063         bsf     TXSTA,  BRGH
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000E   1698           00064         bsf     TXSTA,  TXEN    ; включение передатчика
+                      00065         
+000F   1283 1303      00066         banksel RCSTA
+0011   1618           00067         bsf     RCSTA,  CREN    ; включение приемкника
+0012   1798           00068         bsf     RCSTA,  SPEN    ; включение UART
+                      00069         
+0013   1683 1303      00070         banksel PIE1
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0015   168C           00071         bsf     PIE1,   RCIE    ; прерывание от приеменика
+                      00072 ;       bsf     PIE1,   TXIE    ; прерывание от передатчика                         влетаю в прерывание,
+                             продумать
+                      00073         
+0016   1283 1303      00074         banksel INTCON
+0018   170B           00075         bsf     INTCON, PEIE    ; вкл. прерывание от переферии
+0019   178B           00076         bsf     INTCON, GIE     ; глобальное прерывание
+                      00077         
+001A   0008           00078         return
+                      00079 ;*******************************************************************************
+                      00080 ;* ФУНКЦИЯ  : Передает 8-битное значение по асинхронному каналу
+                      00081 ;* РЕСУРСЫ  : Модуль USART      
+                      00082 ;* ВХОД     : 8-битное значение в uart_data_out     
+                      00083 ;* ВЫХОД    : Содержимое uart_data_out не изменяется, байт передан      
+                      00084 ;*******************************************************************************        
+001B                  00085 UartPutChar
+001B   1283 1303      00086         banksel PIR1
+001D   ???? ????      00087         pagesel UartPutChar
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:08:16         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+001F   1E0C           00088         btfss   PIR1, TXIF
+0020   2???           00089         goto    UartPutChar
+0021   ???? ????      00090         banksel uart_data_out
+0023   08??           00091         movf    uart_data_out, w
+0024   1283 1303      00092         banksel TXREG
+0026   0099           00093         movwf   TXREG
+                      00094         
+0027   0008           00095         return
+                      00096 
+                      00097 ;*******************************************************************************
+                      00098 ;* ФУНКЦИЯ  : Принимает 8-битное значение по асинхронному каналу
+                      00099 ;* РЕСУРСЫ  : Модуль USART      
+                      00100 ;* ВХОД     : Нет
+                      00101 ;* ВЫХОД    : Принятый байт - uart_data_in
+                      00102 ;* ВЫХОД    : Байт-ошибка uart_error:
+                      00103 ;                                   .00 - ошибок нет
+                      00104 ;                                   .-4 - ошибка прерывания
+                      00105 ;                                   .-1 - ошибка кадрирования
+                      00106 ;                                   .-2 - ошибка переполнения
+                      00107 ;                                   .-3 - ошибка кадрирования и переполнения
+                      00108 ;*******************************************************************************        
+0028                  00109 UartGetChar
+0028   ???? ????      00110         banksel uart_error
+002A   01??           00111         clrf    uart_error          ; обнуляем признак ошибки
+002B   1283 1303      00112         banksel PIR1
+002D   ???? ????      00113         pagesel UartCheckFrame
+002F   1A8C           00114         btfsc   PIR1, RCIF          ; было прерывание?
+0030   2???           00115         goto    UartCheckFrame      ; Да, проверяем ошибки
+0031   ???? ????      00116         banksel uart_error
+0033   30FC           00117         movlw   -4
+0034   00??           00118         movwf   uart_error          ; Нет, ошибка прерывания (.-4)
+0035   ???? ???? 2??? 00119         lgoto   UartExit        
+                      00120         
+0038                  00121 UartCheckFrame                      ; проверка ошибки кадрирования
+0038   1283 1303      00122         banksel RCSTA
+003A   ???? ????      00123         pagesel UartCheckOverrun
+003C   1D18           00124         btfss   RCSTA, FERR         ; была ошибка кадрирования?
+003D   2???           00125         goto    UartCheckOverrun    ; Нет, проверяем ошибки далее
+003E   ???? ????      00126         banksel uart_error
+Message[305]: Using default destination of 1 (file).
+0040   03??           00127         decf    uart_error          ; Да, ошибка кадрирования (.-1)
+                      00128                         
+0041                  00129 UartCheckOverrun                    ; проверка ошибки переполнения
+0041   1283 1303      00130         banksel RCSTA
+0043   ???? ????      00131         pagesel UartCheckError
+0045   1C98           00132         btfss   RCSTA, OERR         ; была ошибка переполнения?
+0046   2???           00133         goto    UartCheckError      ; Нет, проверяем признак ошибки 
+0047   ???? ????      00134         banksel uart_error
+Message[305]: Using default destination of 1 (file).
+0049   03??           00135         decf    uart_error          ; Да, ошибка переполнения (.-2)
+Message[305]: Using default destination of 1 (file).
+004A   03??           00136         decf    uart_error
+                      00137         
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:08:16         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+004B                  00138 UartCheckError                      ; проверяем ошибки приема по UART
+004B   ???? ????      00139         banksel uart_error
+004D   1103           00140         bcf     STATUS, Z
+Message[305]: Using default destination of 1 (file).
+004E   08??           00141         movf    uart_error          ; проверяем признак на 00
+004F   ???? ????      00142         pagesel UartReadByte        ; если Z = 1, ошибок нет, читаем байт
+0051   1903           00143         btfsc   STATUS, Z           
+0052   2???           00144         goto    UartReadByte
+0053   1283 1303      00145         banksel RCSTA
+0055   1398           00146         bcf     RCSTA, SPEN         ; перегружаем модуль UART, очищаем флаги 
+0056   1798           00147         bsf     RCSTA, SPEN         ; RCSTA<OERR>, RCSTA<FERR>
+0057   ???? ???? 2??? 00148         lgoto   UartExit
+                      00149         
+005A                  00150 UartReadByte
+005A   1283 1303      00151         banksel RCREG
+005C   081A           00152         movf    RCREG, w
+005D   00??           00153         movwf   uart_data_in    
+                      00154         
+005E                  00155 UartExit
+005E   0008           00156         return
+                      00157     
+                      00158 ;*******************************************************************************
+                      00159 ;* ФУНКЦИИ  : прием и возврат данных по UART
+                      00160 ;* ВХОД     : uart_data_in из функции UartGetChar
+                      00161 ;* ВЫХОД    : uart_data_out в функцию UartPutChar       
+                      00162 ;*******************************************************************************        
+005F                  00163 UartReturnData
+005F   ???? ????      00164         banksel uart_data_in
+0061   08??           00165         movf    uart_data_in, w
+0062   ???? ????      00166         banksel uart_data_out
+0064   00??           00167         movwf   uart_data_out
+0065   ???? ???? 2??? 00168         lcall   UartPutChar
+0068   ???? ????      00169         pagesel $
+006A   0008           00170         return
+                      00171         
+                      00172         end
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:08:16         PAGE  5
 
 
 SYMBOL TABLE
@@ -115,6 +255,7 @@ ANS8                              00000000
 ANS9                              00000001
 ANSEL                             00000188
 ANSELH                            00000189
+BAUD                              9600
 BAUDCTL                           00000187
 BCLIE                             00000003
 BCLIF                             00000003
@@ -135,13 +276,13 @@ BRG5                              00000005
 BRG6                              00000006
 BRG7                              00000007
 BRG8                              00000000
-BRG9                              00000001
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE  4
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:08:16         PAGE  6
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+BRG9                              00000001
 BRGH                              00000002
 C                                 00000000
 C1CH0                             00000000
@@ -194,13 +335,13 @@ CCPR2L                            0000001B
 CHS0                              00000002
 CHS1                              00000003
 CHS2                              00000004
-CHS3                              00000005
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE  5
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:08:16         PAGE  7
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+CHS3                              00000005
 CKE                               00000006
 CKP                               00000004
 CM1CON0                           00000107
@@ -253,13 +394,13 @@ INTEDG                            00000006
 INTF                              00000001
 IOCB                              00000096
 IOCB0                             00000000
-IOCB1                             00000001
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE  6
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:08:16         PAGE  8
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+IOCB1                             00000001
 IOCB2                             00000002
 IOCB3                             00000003
 IOCB4                             00000004
@@ -271,7 +412,6 @@ IRCF1                             00000005
 IRCF2                             00000006
 IRP                               00000007
 LTS                               00000001
-LedTurnOn                         00000000
 MC1OUT                            00000007
 MC2OUT                            00000006
 MSK                               00000093
@@ -313,7 +453,7 @@ PCON                              0000008E
 PDC0                              00000000
 PDC1                              00000001
 PDC2                              00000002
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE  7
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:08:16         PAGE  9
 
 
 SYMBOL TABLE
@@ -334,7 +474,6 @@ PORTB                             00000006
 PORTC                             00000007
 PORTD                             00000008
 PORTE                             00000009
-PORT_LED8                         00000008
 PR2                               00000092
 PRSEN                             00000007
 PS0                               00000000
@@ -372,13 +511,13 @@ RC0                               00000000
 RC1                               00000001
 RC2                               00000002
 RC3                               00000003
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE  8
+RC4                               00000004
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:08:16         PAGE 10
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-RC4                               00000004
 RC5                               00000005
 RC6                               00000006
 RC7                               00000007
@@ -431,13 +570,13 @@ SSPBUF                            00000013
 SSPCON                            00000014
 SSPCON2                           00000091
 SSPEN                             00000005
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE  9
+SSPIE                             00000003
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:08:16         PAGE 11
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-SSPIE                             00000003
 SSPIF                             00000003
 SSPM0                             00000000
 SSPM1                             00000001
@@ -490,13 +629,13 @@ TOUTPS1                           00000004
 TOUTPS2                           00000005
 TOUTPS3                           00000006
 TRISA                             00000085
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE 10
+TRISA0                            00000000
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:08:16         PAGE 12
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-TRISA0                            00000000
 TRISA1                            00000001
 TRISA2                            00000002
 TRISA3                            00000003
@@ -536,7 +675,6 @@ TRISE0                            00000000
 TRISE1                            00000001
 TRISE2                            00000002
 TRISE3                            00000003
-TRIS_LED8                         00000088
 TRMT                              00000001
 TUN0                              00000000
 TUN1                              00000001
@@ -549,19 +687,30 @@ TX9D                              00000000
 TXD8                              00000000
 TXEN                              00000005
 TXIE                              00000004
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE 11
+TXIF                              00000004
+TXREG                             00000019
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:08:16         PAGE 13
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-TXIF                              00000004
-TXREG                             00000019
 TXSTA                             00000098
 UA                                00000001
+UART_RX                           TRISC, RC7
+UART_TX                           TRISC, RC6
 ULPWUE                            00000005
 ULPWUIE                           00000002
 ULPWUIF                           00000002
+UartCheckError                    0000004B
+UartCheckFrame                    00000038
+UartCheckOverrun                  00000041
+UartExit                          0000005E
+UartGetChar                       00000028
+UartInit                          00000000
+UartPutChar                       0000001B
+UartReadByte                      0000005A
+UartReturnData                    0000005F
 VCFG0                             00000004
 VCFG1                             00000005
 VR0                               00000000
@@ -593,10 +742,18 @@ WR                                00000001
 WREN                              00000002
 WRERR                             00000003
 WUE                               00000001
+X                                 (XTAL / BAUD / 16) - 1
+XTAL                              4000000
 Z                                 00000002
 _BOR21V                           00003EFF
 _BOR40V                           00003FFF
 _BOR4V_BOR21V                     00003EFF
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:08:16         PAGE 14
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 _BOR4V_BOR40V                     00003FFF
 _BOREN_NSLEEP                     00003EFF
 _BOREN_OFF                        00003CFF
@@ -608,12 +765,6 @@ _BOR_ON                           00003FFF
 _BOR_SBODEN                       00003DFF
 _CONFIG1                          00002007
 _CONFIG2                          00002008
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE 12
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 _CPD_OFF                          00003FFF
 _CPD_ON                           00003F7F
 _CP_OFF                           00003FFF
@@ -654,7 +805,14 @@ _MCLRE_OFF                        00003FDF
 _MCLRE_ON                         00003FFF
 _PWRTE_OFF                        00003FFF
 _PWRTE_ON                         00003FEF
+_STARTUP_0068                     00000068
 _WDTE_OFF                         00003FF7
+MPASM 5.66                 UART_HARDWARE.ASM   3-25-2016  20:08:16         PAGE 15
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 _WDTE_ON                          00003FFF
 _WDT_OFF                          00003FF7
 _WDT_ON                           00003FFF
@@ -664,16 +822,14 @@ _WRT_HALF                         000039FF
 _WRT_OFF                          00003FFF
 _XT_OSC                           00003FF9
 __16F887                          00000001
-led_temp                          00000000
-
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE 13
-
-
-
-
+__DEBUG                           
+__MPLAB_DEBUGGER_SIMULATOR        1
+uart_data_in                      00000001
+uart_data_out                     00000000
+uart_error                        00000002
 
 Errors   :     0
 Warnings :     0 reported,     0 suppressed
-Messages :     1 reported,     0 suppressed
+Messages :    11 reported,     0 suppressed
 
 

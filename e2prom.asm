@@ -12,11 +12,11 @@
 ;-------------------------------------------------------------------------------
 ; ГЛОБАЛЬНЫЕ ФУНКЦИИ
 ;-------------------------------------------------------------------------------
-    global  EEReadData
+    global  EEReadData, EEWriteData
 ;-------------------------------------------------------------------------------
 ; ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
 ;-------------------------------------------------------------------------------
-    global  ee_addr_data, ee_addrh_data, ee_data, ee_datah
+    global  ee_addr_data, ee_addrh_data, ee_data, ee_datah, eeprom_error
 ;-------------------------------------------------------------------------------
 ; ДАННЫЕ    (ПОЛЗОВАТЕЛЬСКИЕ, НАСТРАИВАЕМЫЕ) 
 ;-------------------------------------------------------------------------------
@@ -31,48 +31,98 @@
     udata
 ee_addr_data	res 1	; младший адрес
 ee_addrh_data	res 1	; старший адрес
-ee_data		res 1	; младший байт данных
-ee_datah	res 1	; страший байт данных
+ee_data         res 1	; младший байт данных
+ee_datah        res 1	; страший байт данных
+eeprom_error    res 1   ; признак ошибки .-1 (0 -> нет ошибки)        
  
 ;-------------------------------------------------------------------------------
 ; НАЧАЛО КОДА
 ;-------------------------------------------------------------------------------
 STARTUP	code
 ;*******************************************************************************
-;* ФУНКЦИЯ  : Принимает 8-битное значение по асинхронному каналу
-;* РЕСУРСЫ  : Модуль USART	
-;* ВХОД	    : Нет
-;* ВЫХОД    : Принятый байт - uart_data_in
-;* ВЫХОД    : Байт-ошибка uart_error:
+;* ФУНКЦИЯ  : Читает 8-битное значение из памяти EEPROM
+;* РЕСУРСЫ  : Память EEPROM	
+;* ВХОД	    : 8-битное значение адреса в ee_addr_data
+;* ВЫХОД    : Считанный байт - ee_data
 ;*******************************************************************************	
 EEReadData
-;	banksel	INTCON		; стоит ли???
+;	banksel	INTCON              ; стоит ли???
 ;	bcf	INTCON, GIE
 	banksel ee_addr_data
 	movf	ee_addr_data, w
 	banksel	EEADR
-	movwf	EEADR		; адрес чтения данных eeprom
+	movwf	EEADR               ; адрес чтения данных eeprom
 	banksel	EECON1
-	bcf	EECON1, EEPGD	; 0 - выбрана память eeprom
-	bsf	EECON1, RD	; чтение памяти
+	bcf     EECON1, EEPGD       ; 0 - выбрана память eeprom
+	bsf     EECON1, RD          ; чтение памяти
 	banksel	EEDATA		
-	movf	EEDATA, w	; EEDAT >> ee_data
+	movf	EEDATA, w           ; EEDAT >> ee_data
 	banksel	ee_data
 	movwf	ee_data
 ;	retfie
 	return
-	
-	
-;EEReadCheck
-;	banksel	PIR2
-;	pagesel	EEReadCheck
-;	btfss	PIR2, EEIF	; данные записаны?
-;	goto	EEReadCheck	; нет, ждемс..
-;	bcf	PIR2, EEIF	; да, обнуляем флаг записи
-	
-	
-	
-	
+;*******************************************************************************
+;* ФУНКЦИЯ  : Записывает 8-битное значение в память EEPROM
+;* РЕСУРСЫ  : Память EEPROM	
+;* ВХОД	    : 8-битное значение адреса в ee_addr_data
+;* ВХОД     : 8-битное значение на запись в 
+;* ВЫХОД    : Считанный байт - ee_data
+;*******************************************************************************
+EEWriteData
+    banksel ee_addr_data
+	movf	ee_addr_data, w
+    banksel	EEADR
+	movwf	EEADR               ; Адрес записи
+    
+    banksel ee_data
+    movf    ee_data, w
+    banksel EEDATA
+    movwf   EEDATA              ; Данные на запись
+    
+    banksel EECON1
+    bcf     EECON1, EEPGD       ; Выбрана память EEPROM
+    bsf     EECON1, WREN        ; Разрешение записи
+    bcf     INTCON, GIE         ; Откл. глобальное прерывание
+    movlw   0x55
+    movwf   EECON2
+    movlw   0xAA
+    movwf   EECON2              ; Инициализация записи
+    bsf     EECON1, WR          ; Запись!
+    bcf     EECON1, WREN        ; Откл. разрешение на запись
+    bsf     INTCON, GIE         ; Вкл. глобальное прерывание
+    
+;    SLEEP                      ; СПАТЬ!
+    
+EEWriteCheck                    ; Проверка флага записи
+	banksel	PIR2
+	pagesel	EEWriteCheck
+	btfss	PIR2, EEIF          ; данные записаны?
+	goto	EEWriteCheck        ; нет, ждемс..
+	bcf     PIR2, EEIF          ; да, обнуляем флаг записи
+    
+EEWriteError                    ; Проверка флага ошибки записи
+    banksel eeprom_error        ; Обнуляем признак ошибки
+    clrf    eeprom_error
+    banksel EECON1
+    pagesel EEExit
+    btfss   EECON1, EEIF        ; Ошибка?
+    goto    EEExit              ; Нет, выход из функции записи 
+
+EEerror                         
+    banksel eeprom_error        ; Да, код ошибки -1
+    movlw   -1
+    movwf   eeprom_error
+    lgoto   EEWriteData         ; Повтор записи
+        
+EEExit
+    return
+    
+    
+    
+    return
+	; Проверить WRERR
+    ; Проверить EEIF
+    ; Выдать ошибку в eeprom_error
 	end
 
 

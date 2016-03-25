@@ -1,4 +1,4 @@
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE  1
+MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:08:16         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -57,7 +57,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 0000   1283 1303      00040         banksel PORT_LED8
 0002   0188           00041         clrf    PORT_LED8       ; конфиг. порта
 0003   ???? ????      00042         banksel led_temp
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE  2
+MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:08:16         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -77,7 +77,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0010   0008           00053         return
                       00054         
                       00055         end
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE  3
+MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:08:16         PAGE  3
 
 
 SYMBOL TABLE
@@ -136,7 +136,7 @@ BRG6                              00000006
 BRG7                              00000007
 BRG8                              00000000
 BRG9                              00000001
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE  4
+MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:08:16         PAGE  4
 
 
 SYMBOL TABLE
@@ -195,7 +195,7 @@ CHS0                              00000002
 CHS1                              00000003
 CHS2                              00000004
 CHS3                              00000005
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE  5
+MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:08:16         PAGE  5
 
 
 SYMBOL TABLE
@@ -254,7 +254,7 @@ INTF                              00000001
 IOCB                              00000096
 IOCB0                             00000000
 IOCB1                             00000001
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE  6
+MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:08:16         PAGE  6
 
 
 SYMBOL TABLE
@@ -313,7 +313,7 @@ PCON                              0000008E
 PDC0                              00000000
 PDC1                              00000001
 PDC2                              00000002
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE  7
+MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:08:16         PAGE  7
 
 
 SYMBOL TABLE
@@ -372,7 +372,7 @@ RC0                               00000000
 RC1                               00000001
 RC2                               00000002
 RC3                               00000003
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE  8
+MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:08:16         PAGE  8
 
 
 SYMBOL TABLE
@@ -431,7 +431,7 @@ SSPBUF                            00000013
 SSPCON                            00000014
 SSPCON2                           00000091
 SSPEN                             00000005
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE  9
+MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:08:16         PAGE  9
 
 
 SYMBOL TABLE
@@ -490,7 +490,7 @@ TOUTPS1                           00000004
 TOUTPS2                           00000005
 TOUTPS3                           00000006
 TRISA                             00000085
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE 10
+MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:08:16         PAGE 10
 
 
 SYMBOL TABLE
@@ -549,7 +549,7 @@ TX9D                              00000000
 TXD8                              00000000
 TXEN                              00000005
 TXIE                              00000004
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE 11
+MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:08:16         PAGE 11
 
 
 SYMBOL TABLE
@@ -608,7 +608,7 @@ _BOR_ON                           00003FFF
 _BOR_SBODEN                       00003DFF
 _CONFIG1                          00002007
 _CONFIG2                          00002008
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE 12
+MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:08:16         PAGE 12
 
 
 SYMBOL TABLE
@@ -664,9 +664,11 @@ _WRT_HALF                         000039FF
 _WRT_OFF                          00003FFF
 _XT_OSC                           00003FF9
 __16F887                          00000001
+__DEBUG                           
+__MPLAB_DEBUGGER_SIMULATOR        1
 led_temp                          00000000
+MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:08:16         PAGE 13
 
-MPASM 5.66                     LEDARRAY8.ASM   3-25-2016  20:07:09         PAGE 13
 
 
 
