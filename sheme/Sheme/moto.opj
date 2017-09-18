@@ -1,0 +1,53 @@
+(ExpressProject ""
+  (ProjectVersion "19981106")
+  (ProjectType "PCB")
+  (Folder "Design Resources"
+    (Folder "Library"
+      (File ".\discrete.olb"
+        (Type "Schematic Library")))
+    (File ".\moto.dsn"
+      (Type "Schematic Design"))
+    (BuildFileAddedOrDeleted "x")
+    (CompileFileAddedOrDeleted "x")
+    (NoModify)
+    (DOCKED "TRUE")
+    (DOCKING_POSITION "59420"))
+  (Folder "Outputs")
+  (Folder "Referenced Projects")
+  (PartMRUSelector
+    (C
+      (FullPartName "C.Normal")
+      (LibraryName "D:\ONEDRIVE\PROJECT\ROBOPIC\OLD\SHEME\DISCRETE.OLB")
+      (DeviceIndex "0"))
+    (R_0.125W
+      (FullPartName "R_0.125W.Normal")
+      (LibraryName "D:\ONEDRIVE\PROJECT\ROBOPIC\OLD\SHEME\DISCRETE.OLB")
+      (DeviceIndex "0"))
+    (R
+      (FullPartName "R.Normal")
+      (LibraryName "D:\ONEDRIVE\PROJECT\ROBOPIC\OLD\SHEME\DISCRETE.OLB")
+      (DeviceIndex "0")))
+  (GlobalState
+    (FileView
+      (Path "Design Resources")
+      (Path "Design Resources" ".\moto.dsn")
+      (Path "Design Resources" ".\moto.dsn" "SCHEMATIC1")
+      (Path "Design Resources" "Library")
+      (Select "Design Resources" ".\moto.dsn" "SCHEMATIC1" "moto"))
+    (HierarchyView)
+    (Doc
+      (Type "COrCapturePMDoc")
+      (Frame
+        (Placement "44 0 1 -1 -1 -1 -1 0 150 0 942"))
+      (Tab 0))
+    (Doc
+      (Type "COrSchematicDoc")
+      (Frame
+        (Placement "44 2 3 -1 -1 -8 -30 100 1261 100 701")
+        (Scroll "418 298")
+        (Zoom "119")
+        (Occurrence "/"))
+      (Path "D:\PIC16F887\SHEME\SHEME\MOTO.DSN")
+      (Schematic "SCHEMATIC1")
+      (Page "moto")))
+  (MPSSessionName "lunegovds"))
